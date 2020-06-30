@@ -19,3 +19,4 @@ kubectl create clusterrolebinding dashboard-cluster-admin --clusterrole=cluster-
 kubectl get -n pod kube-system
 
 
+122134245
