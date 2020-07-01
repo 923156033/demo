@@ -1,0 +1,147 @@
+cat <<EOF >>/etc/hosts
+172.168.11.10 k8s-master
+172.168.11.11 k8s-node1
+172.168.11.12 k8s-node2
+172.168.11.13 k8s-node3
+
+http://k8s.ziji.work/kubernetes/
+
+
+33be291778c26e5554d5ea7906e1fdb4
+
+kubectl create clusterrolebinding kubelet-bootstrap --clusterrole=system:node-bootstrapper --user=kubelet-bootstrap
+
+
+bash apiserver.sh  172.168.11.10 https://172.168.11.10:2379,https://172.168.11.11:2379,https://172.168.11.12:2379,https://1172.168.11.13:2379
+
+
+/opt/etcd/bin/etcdctl  --ca-file=ca.pem  --cert-file=server.pem  --key-file=server-key.pem  --endpoints="https://172.168.11.10:2379,https://172.168.11.11:2379,https://172.168.11.12:2379,https://172.168.11.13:2379" cluster-health
+
+/opt/etcd/bin/etcdctl --ca-file=ca.pem --cert-file=server.pem --key-file=server-key.pem --endpoints="https://172.168.11.10:2379,https://172.168.11.11:2379,https://172.168.11.12:2379,https://172.168.11.13:2379"  set /coreos.com/network/config  '{ "Network": "172.17.0.0/16", "Backend": {"Type": "vxlan"}}'
+
+ /opt/etcd/bin/etcdctl --ca-file=ca.pem --cert-file=server.pem --key-file=server-key.pem --endpoints="https://172.168.11.10:2379,https://172.168.11.11:2379,https://172.168.11.12:2379,https://172.168.11.13:2379"   get /coreos.com/network/config
+
+
+
+./etcd.sh etcd01 172.168.11.10 etcd02=https://172.168.11.11:2380,etcd03=https://172.168.11.12:2380,etcd04=https://172.168.11.13:2380
+
+
+
+
+
+k8s启动
+master节点和node节点
+etcd集群：systemctl restart etcd
+
+node节点
+Flannel启动：systemctl restart flanneld
+
+node节点
+docker容器：systemctl restart docker
+
+master节点
+kube-apiserver启动：systemctl restart kube-apiserver
+
+master节点
+kube-controller-manager启动：systemctl restart kube-controller-manager
+
+master节点
+kube-scheduler启动：systemctl restart kube-scheduler
+
+node节点
+kubelet启动：systemctl restart kubelet
+
+node节点
+kube-proxy启动：systemctl restart kube-proxy
+
+Kubernetes 仪表板令牌：kubectl describe secret dashboard-admin-token-mb9dm  -n kube-system
+
+ eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJkYXNoYm9hcmQtYWRtaW4tdG9rZW4tbWI5ZG0iLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGFzaGJvYXJkLWFkbWluIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQudWlkIjoiZDk3OWZlNWYtYmI1YS0xMWU5LTg4OWQtMDA1MDU2MjcyYzdhIiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50Omt1YmUtc3lzdGVtOmRhc2hib2FyZC1hZG1pbiJ9.miTZv_V7o2sI54vY-xOjHArX8tWXuIZ7pYslNKYZPhCbpgPA59Uj6P1ApxWCTxoEJ8PFrKf7SfYMR8cSmVGZFtQKoHCCPw6bZupp3zrBC8hVaGMZeiNmgmbkud76krfjk91HiFNGUX2sreQR7dAnpzjw_vKAwOVfnwan4C6JGmaBIIoY1nUiNHbOBOkgCeCsKyBPre0hjUMYkZAbVhcW1eFrsZBiUWWV3S9SBqnu3KRK6uUH_JNCYO7ets5-Imnn1OKcnroCvvAgha73YsOVQgpkAXnbXU_zqk-s2tOFtS_fsdMjMOe04Axr5kNpbjBXIk4v4919UM72N_giQNaICg
+
+
+查看该空间的对外发布的端口：kubectl get svc -n kube-system
+
+
+创建一个nginx应用
+
+kubectl run nginx --replicas=3 --labels="app=nginx-example" --image=nginx:1.10 --port=80
+
+应用对外发布
+kubectl expose deployment nginx --port=80 --type=NodePort --target-port=80 --name=nginx-service
+
+replicas：容器数
+labels：标签
+image：镜像
+port：端口
+
+
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: webserver
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: webserver
+    spec:
+      containers:
+      - name: webserver
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: hostvol
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: hostvol
+        hostPath:
+          path: /home/docker/vol
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

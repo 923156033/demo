@@ -1,1 +1,22 @@
-1111111111111111
+      "10.0.0.1",
+      "127.0.0.1",
+      "172.16.21.200",
+      "172.16.21.204",
+      "172.16.21.200",
+      "172.16.21.211",
+      "172.16.21.212",
+
+
+378d544b16067d648a9e38b7726cfe74
+
+172.16.21.200 https://172.16.21.200:2379,https://172.16.21.201:2379,https://172.16.21.202:2379
+
+kubectl create clusterrolbinding dashboard-cluster-admin --clusterrole=cluster-admin --serviceaccounk=kube-sytem:dashboard-admin
+
+
+kubectl create clusterrolebinding dashboard-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-sytem:dashboard-admin
+
+kubectl get -n pod kube-system
+
+
+122134245
